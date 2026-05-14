@@ -100,6 +100,8 @@ class Config
             'permissions' => null,
             'directoryPerm' => 0755,
             'branch' => '',
+            'base' => '',
+            'logger' => false,
             'include' => [],
             'exclude' => array_merge($this->globalFilesToExclude, [$this->iniFile]),
             'copy' => [],
@@ -129,14 +131,17 @@ class Config
             }
         }
 
-        // Check if the quickmode URL is correct.
-        $parsed_url = parse_url($options['quickmode']);
-        if ($parsed_url === false) {
-            throw new \Exception('Your quickmode URL cannot be parsed. Please fix it.');
+        // Normalise base: must end with '/' when non-empty
+        if (!empty($config['base'])) {
+            $config['base'] = rtrim($config['base'], '/') . '/';
         }
 
-        // Merge parsed quickmode details
+        // Merge quickmode URL if present
         if (isset($options['quickmode'])) {
+            $parsed_url = parse_url($options['quickmode']);
+            if ($parsed_url === false) {
+                throw new \Exception('Your quickmode URL cannot be parsed. Please fix it.');
+            }
             $config = array_merge($config, $parsed_url);
         }
 
