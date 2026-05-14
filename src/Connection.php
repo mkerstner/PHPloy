@@ -28,6 +28,16 @@ class Connection
     public $server;
 
     /**
+     * @var bool
+     */
+    protected $isSftp = false;
+
+    /**
+     * @var SftpConnectionProvider|null
+     */
+    protected $sftpConnectionProvider = null;
+
+    /**
      * Connection constructor.
      *
      * @param array $server
@@ -55,11 +65,11 @@ class Connection
     {
         $options = [
             'host' => $server['host'],
-            'port' => $server['port'],
             'username' => $server['user'],
             'password' => $server['pass'],
-            'privkey' => $server['privkey'],
             'root' => $server['path'],
+            'port' => $server['port'],
+            'privkey' => $server['privkey'],
             'timeout' => ($server['timeout'] ?: 30),
             'visibility' => $server['visibility'] ?? 'public',
             'permPublic' => $server['permPublic'] ?? 0644,
@@ -165,11 +175,47 @@ class Connection
                 ],
             ]);
 
+            $this->isSftp = true;
+            $this->sftpConnectionProvider = $connectionProvider;
+
             return new Filesystem(new SftpAdapter($connectionProvider, $options['root'], $visibility));
         } catch (\Exception $e) {
             echo "\r\nOh Snap: {$e->getMessage()}\r\n";
             throw $e;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSftp(): bool
+    {
+        return $this->isSftp;
+    }
+
+    /**
+     * Execute a command on the remote SFTP server.
+     * Returns the command output, or throws on connection/exec failure.
+     *
+     * @param string $command
+     * @return string
+     * @throws \Exception if not an SFTP connection or exec fails
+     */
+    public function exec(string $command): string
+    {
+        if (!$this->sftpConnectionProvider) {
+            throw new \Exception('exec() is only supported for SFTP connections.');
+        }
+
+        $sftp = $this->sftpConnectionProvider->provideConnection();
+
+        $result = $sftp->exec($command);
+
+        if ($result === false) {
+            throw new \Exception("Remote command failed: {$command}");
+        }
+
+        return $result;
     }
 
     /**
