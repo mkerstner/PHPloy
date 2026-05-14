@@ -55,6 +55,7 @@ class Connection
     {
         $options = [
             'host' => $server['host'],
+            'port' => $server['port'],
             'username' => $server['user'],
             'password' => $server['pass'],
             'root' => $server['path'],
