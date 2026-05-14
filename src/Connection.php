@@ -58,6 +58,7 @@ class Connection
             'port' => $server['port'],
             'username' => $server['user'],
             'password' => $server['pass'],
+            'privkey' => $server['privkey'],
             'root' => $server['path'],
             'timeout' => ($server['timeout'] ?: 30),
             'visibility' => $server['visibility'] ?? 'public',
