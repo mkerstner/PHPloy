@@ -237,11 +237,7 @@ class Connection
      */
     public function directoryExists($path)
     {
-        try {
-            return $this->server->directoryExists($path);
-        } catch (\Exception $e) {
-            return false;
-        }
+       return $this->server->directoryExists($path);
     }
 
     /**
